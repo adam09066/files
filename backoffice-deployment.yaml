@@ -1,0 +1,51 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert
+    kompose.version: 1.1.0 (36652f6)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: backoffice
+  name: backoffice
+spec:
+  replicas: 1
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        io.kompose.service: backoffice
+    spec:
+      containers:
+      - args:
+        - python
+        - /app/run-container.py
+        env:
+        - name: CASSANDRA_KEYSPACE
+          value: agrodat
+        - name: CASSANDRA_PASSWORD
+          value: agrodat
+        - name: CASSANDRA_SERVER
+          value: db
+        - name: CASSANDRA_USER
+          value: agrodat
+        - name: CREATE_USER
+          value: "true"
+        - name: DB_MAX_TRIES
+          value: "10"
+        - name: DB_SLEEP
+          value: "5"
+        - name: GOOGLE_API_KEY
+          value: AIzaSyARpgwqnpJEUO7S3qK5xJYTqEKHTaKc9kk
+        - name: USER_EMAIL
+          value: agrodat@agrodat.hu
+        - name: USER_PASSWORD
+          value: agrodat
+        image: gcr.io/elk-project-lab/backoffice:latest
+        name: agrodat-backoffice
+        ports:
+        - containerPort: 5000
+        resources: {}
+      restartPolicy: Always
+status: {}

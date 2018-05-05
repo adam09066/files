@@ -1,0 +1,48 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert
+    kompose.version: 1.1.0 (36652f6)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: db
+  name: db
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        io.kompose.service: db
+    spec:
+      containers:
+      - args:
+        - cassandra
+        - -f
+        env:
+        - name: CASSANDRA_AUTHENTICATOR
+          value: PasswordAuthenticator
+        - name: CASSANDRA_KEYSPACE
+          value: agrodat
+        - name: CASSANDRA_PASSWORD
+          value: agrodat
+        - name: CASSANDRA_REPLICATION
+          value: "3"
+        - name: CASSANDRA_SEEDS
+          value: db
+        - name: CASSANDRA_USER
+          value: agrodat
+        image: gcr.io/elk-project-lab/cassandra:latest
+        name: cassandra
+        resources: {}
+        volumeMounts:
+        - mountPath: /opt
+          name: db-claim0
+      restartPolicy: Always
+      volumes:
+      - name: db-claim0
+        persistentVolumeClaim:
+          claimName: db-claim0

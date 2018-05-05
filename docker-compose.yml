@@ -1,0 +1,64 @@
+version: '3'
+
+services:
+   db:
+#     build: ./docker-registry.lpds.sztaki.hu/cassandra-auth:latest
+     image: gcr.io/test-environment-kubernetes/cassandra:latest
+     container_name: cassandra
+     environment:
+       CASSANDRA_AUTHENTICATOR: PasswordAuthenticator
+       CASSANDRA_KEYSPACE: agrodat
+       CASSANDRA_REPLICATION: 3
+       CASSANDRA_USER: agrodat
+       CASSANDRA_PASSWORD: agrodat
+       CASSANDRA_SEEDS: db
+       #CASSANDRA_IMPORT: "True"
+     command: cassandra -f
+     volumes:
+       - "./csv:/opt"
+     deploy:
+      replicas: 1
+
+   receiver:
+     depends_on:
+       - db
+     links:
+       - db
+#     build: ./docker-registry.lpds.sztaki.hu/agrodat-receiver:latest
+     image: gcr.io/test-environment-kubernetes/receiver:latest
+     container_name: agrodat-receiver
+     environment:
+       CASSANDRA_SERVER: db
+       CASSANDRA_KEYSPACE: agrodat
+       CASSANDRA_USER: agrodat
+       CASSANDRA_PASSWORD: agrodat
+       ALLOW_UNKNOWN_PILLAR: ALLOW_UNKNOWN_PILLAR_INSTANCES
+       INIT_DB: 1
+       CQLENG_ALLOW_SCHEMA_MANAGEMENT: 1
+       DB_MAX_TRIES: 10
+       DB_SLEEP: 5
+     ports:
+       - "4444:4444"
+     command: python /app/receiver.py
+
+   backoffice:
+     depends_on:
+       - db
+     links:
+       - db
+     image: gcr.io/test-environment-kubernetes/backoffice:latest
+     container_name: agrodat-backoffice
+     environment:
+       CASSANDRA_SERVER: db
+       CASSANDRA_KEYSPACE: agrodat
+       CASSANDRA_USER: agrodat
+       CASSANDRA_PASSWORD: agrodat
+       CREATE_USER: "true"
+       USER_EMAIL: agrodat@agrodat.hu
+       USER_PASSWORD: agrodat
+       DB_MAX_TRIES: 10
+       DB_SLEEP: 5
+       GOOGLE_API_KEY: AIzaSyCCbFNH84wEA_abJMdgtxWtLFXQe1vOeQ8
+     ports:
+       - "5000:5000"
+     command: python /app/run-container.py

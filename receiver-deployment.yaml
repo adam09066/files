@@ -1,0 +1,49 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert
+    kompose.version: 1.1.0 (36652f6)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: receiver
+  name: receiver
+spec:
+  replicas: 1
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        io.kompose.service: receiver
+    spec:
+      containers:
+      - args:
+        - python
+        - /app/receiver.py
+        env:
+        - name: ALLOW_UNKNOWN_PILLAR
+          value: ALLOW_UNKNOWN_PILLAR_INSTANCES
+        - name: CASSANDRA_KEYSPACE
+          value: agrodat
+        - name: CASSANDRA_PASSWORD
+          value: agrodat
+        - name: CASSANDRA_SERVER
+          value: db
+        - name: CASSANDRA_USER
+          value: agrodat
+        - name: CQLENG_ALLOW_SCHEMA_MANAGEMENT
+          value: "1"
+        - name: DB_MAX_TRIES
+          value: "10"
+        - name: DB_SLEEP
+          value: "5"
+        - name: INIT_DB
+          value: "1"
+        image: gcr.io/elk-project-lab/receiver:latest
+        name: agrodat-receiver
+        ports:
+        - containerPort: 4444
+        resources: {}
+      restartPolicy: Always
+status: {}
